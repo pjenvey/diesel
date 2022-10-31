@@ -1,12 +1,13 @@
+extern crate mysqlclient_sys;
 extern crate url;
 
+use self::mysqlclient_sys::mysql_ssl_mode;
 use self::url::percent_encoding::percent_decode;
 use self::url::{Host, Url};
+use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 
 use result::{ConnectionError, ConnectionResult};
-
-use mysqlclient_sys::mysql_ssl_mode;
 
 pub struct ConnectionOptions {
     host: Option<CString>,
@@ -32,6 +33,7 @@ impl ConnectionOptions {
             return Err(connection_url_error());
         }
 
+        let query_pairs = url.query_pairs().into_owned().collect::<HashMap<_, _>>();
         let ssl_mode = match query_pairs.get("ssl_mode") {
             Some(v) => {
                 let ssl_mode = match v.to_lowercase().as_str() {
